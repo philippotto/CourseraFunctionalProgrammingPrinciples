@@ -48,7 +48,23 @@ object Main {
    * Exercise 3
    */
   def countChange(money: Int, coins: List[Int]): Int = {
-
+    if (money == 0)
+      1
+    else if (coins.length == 0)
+      0
+    else {
+      val suitableCoins = coins.filter(_ <= money)
+      if (suitableCoins.isEmpty)
+        0
+      else
+        (0 until suitableCoins.length)
+          .map { i =>
+            val coin = suitableCoins(i)
+            val restCoins = suitableCoins.drop(i)
+            countChange(money - coin, restCoins)
+          }
+          .reduce(_ + _)
+    }
   }
 }
 
