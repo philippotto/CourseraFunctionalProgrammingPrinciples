@@ -47,30 +47,30 @@ class FunSetSuite extends FunSuite {
     assert(1 + 2 === 3)
   }
 
-  
+
   import FunSets._
 
   test("contains is implemented") {
     assert(contains(x => true, 100))
   }
-  
+
   /**
    * When writing tests, one would often like to re-use certain values for multiple
    * tests. For instance, we would like to create an Int-set and have multiple test
    * about it.
-   * 
+   *
    * Instead of copy-pasting the code for creating the set into every test, we can
    * store it in the test class using a val:
-   * 
+   *
    *   val s1 = singletonSet(1)
-   * 
+   *
    * However, what happens if the method "singletonSet" has a bug and crashes? Then
    * the test methods are not even executed, because creating an instance of the
    * test class fails!
-   * 
+   *
    * Therefore, we put the shared values into a separate trait (traits are like
    * abstract classes), and create an instance inside each test method.
-   * 
+   *
    */
 
   trait TestSets {
@@ -82,15 +82,15 @@ class FunSetSuite extends FunSuite {
   /**
    * This test is currently disabled (by using "ignore") because the method
    * "singletonSet" is not yet implemented and the test would fail.
-   * 
+   *
    * Once you finish your implementation of "singletonSet", exchange the
    * function "ignore" by "test".
    */
-  ignore("singletonSet(1) contains 1") {
-    
+  test("singletonSet(1) contains 1") {
+
     /**
      * We create a new instance of the "TestSets" trait, this gives us access
-     * to the values "s1" to "s3". 
+     * to the values "s1" to "s3".
      */
     new TestSets {
       /**
@@ -101,7 +101,7 @@ class FunSetSuite extends FunSuite {
     }
   }
 
-  ignore("union contains all elements") {
+  test("union contains all elements") {
     new TestSets {
       val s = union(s1, s2)
       assert(contains(s, 1), "Union 1")
@@ -109,4 +109,57 @@ class FunSetSuite extends FunSuite {
       assert(!contains(s, 3), "Union 3")
     }
   }
+
+  test("intersection of s1 + s2 and s2 + s3 is s2") {
+    new TestSets {
+      val s12 = union(s1, s2)
+      val s23 = union(s2, s3)
+      val intersection = intersect(s12, s23)
+      assert(contains(intersection, 2), "Intersection contains 2")
+      assert(!contains(intersection, 1), "Intersection doesn't contain 1")
+      assert(!contains(intersection, 3), "Intersection doesn't contain 3")
+    }
+  }
+
+  test("diff of s1 + s2 and s2 + s3 is s1") {
+    new TestSets {
+      val s12 = union(s1, s2)
+      val s23 = union(s2, s3)
+      val difference = diff(s12, s23)
+      assert(contains(difference, 1), "Diff contains 1")
+      assert(!contains(difference, 2), "Diff doesn't contain 2")
+      assert(!contains(difference, 3), "Diff doesn't contain 3")
+    }
+  }
+
+  test("filter works") {
+    new TestSets {
+      val s12 = union(s1, s2)
+      val filtered = filter(s12, (el) => el != 2)
+      assert(contains(filtered, 1), "Filtered contains 1")
+      assert(!contains(filtered, 2), "Filtered doesn't contain 2")
+    }
+  }
+
+  test("forall works") {
+    val positiveUnder1001 : Set = (el: Int) => el >= 0 && el < 1001
+    val positiveInts = (el: Int) => el >= 0
+    assert(forall(positiveUnder1001, positiveInts), "Positive ints under 1001 are positive")
+  }
+
+  test("exists works") {
+    new TestSets {
+      val positiveInts : Set = (el: Int) => el >= 0
+      assert(exists(positiveInts, union(s1, s2)), "positive ints contains at least 1 and 2")
+      assert(exists(positiveInts, s2), "positive ints contains at least 2")
+    }
+  }
+
+  test("map works") {
+    new TestSets {
+      val s1Plus1 = map(s1, _ + 1)
+      assert(s1Plus1.toString === s2.toString)
+    }
+  }
+
 }
