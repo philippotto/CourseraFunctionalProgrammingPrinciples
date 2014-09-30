@@ -77,6 +77,7 @@ class FunSetSuite extends FunSuite {
     val s1 = singletonSet(1)
     val s2 = singletonSet(2)
     val s3 = singletonSet(3)
+    val positiveUnder1001 : Set = (el: Int) => el >= 0 && el < 1001
   }
 
   /**
@@ -142,9 +143,10 @@ class FunSetSuite extends FunSuite {
   }
 
   test("forall works") {
-    val positiveUnder1001 : Set = (el: Int) => el >= 0 && el < 1001
-    val positiveInts = (el: Int) => el >= 0
-    assert(forall(positiveUnder1001, positiveInts), "Positive ints under 1001 are positive")
+    new TestSets {
+      val positiveInts = (el: Int) => el >= 0
+      assert(forall(positiveUnder1001, positiveInts), "Positive ints under 1001 are positive")
+    }
   }
 
   test("exists works") {
@@ -157,8 +159,12 @@ class FunSetSuite extends FunSuite {
 
   test("map works") {
     new TestSets {
-      val s1Plus1 = map(s1, _ + 1)
-      assert(s1Plus1.toString === s2.toString)
+      val s100 = singletonSet(100)
+      val s99 = map(s100, _ - 1)
+      assert(contains(s99, 99), "set with 100 - 1 should contain 99")
+
+      val positiveUnder1001AndEven = map(positiveUnder1001, _ * 2)
+      assert(forall(positiveUnder1001AndEven, _ % 2 == 0))
     }
   }
 
