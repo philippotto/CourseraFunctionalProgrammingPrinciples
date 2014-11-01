@@ -126,11 +126,14 @@ object Anagrams {
     val xMap = x.toMap
     y.foldLeft(xMap)((currentMap, currentOccurence) => {
       currentOccurence match {
-        case (char, count) =>
-          if (count > 1)
-            currentMap.updated(char, count - 1)
+        case (char, count) => {
+          val existingCount = currentMap(char)
+          val newCount = existingCount - count
+          if (newCount > 0)
+            currentMap.updated(char, newCount)
           else
             currentMap - char
+        }
       }
     }).toList
   }
@@ -170,12 +173,44 @@ object Anagrams {
    *
    *  The different sentences do not have to be output in the order shown above - any order is fine as long as
    *  all the anagrams are there. Every returned word has to exist in the dictionary.
-   *  
+   *
    *  Note: in case that the words of the sentence are in the dictionary, then the sentence is the anagram of itself,
    *  so it has to be returned in this list.
    *
    *  Note: There is only one anagram of an empty sentence.
    */
-  def sentenceAnagrams(sentence: Sentence): List[Sentence] = ???
+  def sentenceAnagrams(sentence: Sentence): List[Sentence] = {
+    def helperSentenceAnagrams(sOccurrences: Occurrences) : List[Sentence] =
+      if (sOccurrences.length == 0)
+        List(Nil)
+      else {
+        for {
+          currentOccurences <- combinations(sOccurrences)
+          if currentOccurences != List()
+        } yield {
+          val possibleWords = dictionaryByOccurrences(currentOccurences)
+          if (possibleWords.isEmpty)
+            List()
+          else {
+            val smallerOccurences = subtract(sOccurrences, currentOccurences)
+            val restSentences = helperSentenceAnagrams(smallerOccurences)
+
+            if (restSentences.isEmpty)
+              List()
+            else
+              List(possibleWords(0) :: restSentences(0), possibleWords(0) :: restSentences(0))
+              for {
+                possibleWord <- possibleWords
+                restSentence <- restSentences
+              } yield {
+                possibleWord :: restSentence
+              }
+          }
+        }.flatten
+      }
+
+    val sOccurrences = sentenceOccurrences(sentence)
+    helperSentenceAnagrams(sOccurrences)
+  }
 
 }
