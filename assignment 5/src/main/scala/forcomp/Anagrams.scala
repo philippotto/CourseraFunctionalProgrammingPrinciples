@@ -45,7 +45,8 @@ object Anagrams {
   def sentenceOccurrences(s: Sentence): Occurrences =
     wordOccurrences(s.mkString(""))
 
-  /** The `dictionaryByOccurrences` is a `Map` from different occurrences to a sequence of all
+  /**
+   * The `dictionaryByOccurrences` is a `Map` from different occurrences to a sequence of all
    *  the words that have that occurrence count.
    *  This map serves as an easy way to obtain all the anagrams of a word given its occurrence list.
    *
@@ -67,7 +68,8 @@ object Anagrams {
   def wordAnagrams(word: Word): List[Word] =
     dictionaryByOccurrences(wordOccurrences(word))
 
-  /** Returns the list of all subsets of the occurrence list.
+  /**
+   * Returns the list of all subsets of the occurrence list.
    *  This includes the occurrence itself, i.e. `List(('k', 1), ('o', 1))`
    *  is a subset of `List(('k', 1), ('o', 1))`.
    *  It also include the empty subset `List()`.
@@ -90,29 +92,20 @@ object Anagrams {
    *  in the example above could have been displayed in some other order.
    */
   def combinations(occurrences: Occurrences): List[Occurrences] =
-
-    if (occurrences.length == 0)
-      List(Nil)
-    else{
-      val newOccurencesList =
-        for {
-          (char, count) <- occurrences
-        } yield {
-          val listWithoutChar = occurrences.filter(_._1 != char)
-          val shorterOccurrencesList =
-            if (count > 1)
-              ((char, count - 1) :: listWithoutChar).sorted
-            else
-              listWithoutChar
-
-          combinations(shorterOccurrencesList)
-        }
-
-      occurrences :: newOccurencesList.flatten
+    occurrences match {
+      case List() => List(List())
+      case head :: tail => {
+        val tailCombinations = combinations(tail)
+        tailCombinations ++
+          (for {
+            o <- tailCombinations
+            i <- 1 to head._2
+          } yield (head._1, i) :: o)
+      }
     }
 
-
-  /** Subtracts occurrence list `y` from occurrence list `x`.
+  /**
+   * Subtracts occurrence list `y` from occurrence list `x`.
    *
    *  The precondition is that the occurrence list `y` is a subset of
    *  the occurrence list `x` -- any character appearing in `y` must
@@ -135,11 +128,11 @@ object Anagrams {
             currentMap - char
         }
       }
-    }).toList
+    }).toList.sorted
   }
 
-
-  /** Returns a list of all anagram sentences of the given sentence.
+  /**
+   * Returns a list of all anagram sentences of the given sentence.
    *
    *  An anagram of a sentence is formed by taking the occurrences of all the characters of
    *  all the words in the sentence, and producing all possible combinations of words with those characters,
@@ -180,37 +173,17 @@ object Anagrams {
    *  Note: There is only one anagram of an empty sentence.
    */
   def sentenceAnagrams(sentence: Sentence): List[Sentence] = {
-    def helperSentenceAnagrams(sOccurrences: Occurrences) : List[Sentence] =
-      if (sOccurrences.length == 0)
-        List(Nil)
+    def sentenceAnagrams(occurrences: Occurrences): List[Sentence] = {
+      if (occurrences.isEmpty)
+        List(List())
       else {
         for {
-          currentOccurences <- combinations(sOccurrences)
-          if currentOccurences != List()
-        } yield {
-          val possibleWords = dictionaryByOccurrences(currentOccurences)
-          if (possibleWords.isEmpty)
-            List()
-          else {
-            val smallerOccurences = subtract(sOccurrences, currentOccurences)
-            val restSentences = helperSentenceAnagrams(smallerOccurences)
-
-            if (restSentences.isEmpty)
-              List()
-            else
-              List(possibleWords(0) :: restSentences(0), possibleWords(0) :: restSentences(0))
-              for {
-                possibleWord <- possibleWords
-                restSentence <- restSentences
-              } yield {
-                possibleWord :: restSentence
-              }
-          }
-        }.flatten
+          occurencesCombination <- combinations(occurrences)
+          word <- dictionaryByOccurrences(occurencesCombination)
+          rest <- sentenceAnagrams(subtract(occurrences, occurencesCombination))
+        } yield word :: rest
       }
-
-    val sOccurrences = sentenceOccurrences(sentence)
-    helperSentenceAnagrams(sOccurrences)
+    }
+    sentenceAnagrams(sentenceOccurrences(sentence))
   }
-
 }

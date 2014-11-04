@@ -4,11 +4,14 @@ import org.scalatest.FunSuite
 
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
+import org.scalatest.time._
+import org.scalatest.concurrent.Timeouts._
 
 import Anagrams._
 
 @RunWith(classOf[JUnitRunner])
 class AnagramsSuite extends FunSuite {
+
 
   test("wordOccurrences: abcd") {
     assert(wordOccurrences("abcd") === List(('a', 1), ('b', 1), ('c', 1), ('d', 1)))
@@ -52,7 +55,7 @@ class AnagramsSuite extends FunSuite {
   test("subtract: jimmy - my") {
     val jimmy = List(('j', 1), ('i', 1), ('m', 2), ('y', 1))
     val my = List(('m', 1), ('y', 1))
-    val jim = List(('j', 1), ('i', 1), ('m', 1))
+    val jim = List(('i', 1), ('j', 1), ('m', 1))
     assert(subtract(jimmy, my) === jim)
   }
 
@@ -60,6 +63,13 @@ class AnagramsSuite extends FunSuite {
     val abba = List(('a', 2), ('b', 2))
     val empty = List()
     assert(subtract(abba, abba) === empty)
+  }
+
+  test("subtract: assessment - assess") {
+    val assessment = List(('a', 1), ('s', 4), ('e', 2), ('m', 1), ('n', 1), ('t', 1))
+    val assess = List(('a', 1), ('s', 4), ('e', 1))
+    val ment = List(('e', 1), ('m', 1), ('n', 1), ('t', 1))
+    assert(subtract(assessment, assess) === ment)
   }
 
 
@@ -92,30 +102,35 @@ class AnagramsSuite extends FunSuite {
   }
 
   test("sentence anagrams: Linux rulez") {
-    val sentence = List("Linux", "rulez")
-    val anas = List(
-      List("Rex", "Lin", "Zulu"),
-      List("nil", "Zulu", "Rex"),
-      List("Rex", "nil", "Zulu"),
-      List("Zulu", "Rex", "Lin"),
-      List("null", "Uzi", "Rex"),
-      List("Rex", "Zulu", "Lin"),
-      List("Uzi", "null", "Rex"),
-      List("Rex", "null", "Uzi"),
-      List("null", "Rex", "Uzi"),
-      List("Lin", "Rex", "Zulu"),
-      List("nil", "Rex", "Zulu"),
-      List("Rex", "Uzi", "null"),
-      List("Rex", "Zulu", "nil"),
-      List("Zulu", "Rex", "nil"),
-      List("Zulu", "Lin", "Rex"),
-      List("Lin", "Zulu", "Rex"),
-      List("Uzi", "Rex", "null"),
-      List("Zulu", "nil", "Rex"),
-      List("rulez", "Linux"),
-      List("Linux", "rulez")
-    )
-    assert(sentenceAnagrams(sentence).toSet === anas.toSet)
+
+
+      val sentence = List("Linux", "rulez")
+      val anas = List(
+        List("Rex", "Lin", "Zulu"),
+        List("nil", "Zulu", "Rex"),
+        List("Rex", "nil", "Zulu"),
+        List("Zulu", "Rex", "Lin"),
+        List("null", "Uzi", "Rex"),
+        List("Rex", "Zulu", "Lin"),
+        List("Uzi", "null", "Rex"),
+        List("Rex", "null", "Uzi"),
+        List("null", "Rex", "Uzi"),
+        List("Lin", "Rex", "Zulu"),
+        List("nil", "Rex", "Zulu"),
+        List("Rex", "Uzi", "null"),
+        List("Rex", "Zulu", "nil"),
+        List("Zulu", "Rex", "nil"),
+        List("Zulu", "Lin", "Rex"),
+        List("Lin", "Zulu", "Rex"),
+        List("Uzi", "Rex", "null"),
+        List("Zulu", "nil", "Rex"),
+        List("rulez", "Linux"),
+        List("Linux", "rulez")
+      )
+      failAfter(Span(1000, Millis)) {
+        assert(sentenceAnagrams(sentence).toSet === anas.toSet)
+      }
+
   }
 
 }
