@@ -53,15 +53,62 @@ class BloxorzSuite extends FunSuite {
     }
   }
 
+  // test("isStanding") {
+  //   new Level1 {
+  //     assert(Block(pos(0, 0), pos(0, 0)) === true, "should stand")
+  //     assert(Block(pos(0, 1), pos(0, 0)) === false, "shouldn't stand")
+  //   }
+  // }
+
+  // test("isLegal") {
+  //   new Level1 {
+  //     assert(Block(pos(0, 0), pos(0, 0)) === true, "should stand")
+  //     assert(Block(pos(0, 1), pos(0, 0)) === false, "shouldn't stand")
+  //   }
+  // }
+
+  test("neighborsWithHistory") {
+    new Level1 {
+      val computedNeighbors =
+        neighborsWithHistory(Block(Pos(1,1),Pos(1,1)), List(Left,Up)).toSet
+      val expectedNeighbors = Set(
+        (Block(Pos(1,2),Pos(1,3)), List(Right,Left,Up)),
+        (Block(Pos(2,1),Pos(3,1)), List(Down,Left,Up))
+      )
+
+      assert(computedNeighbors === expectedNeighbors, "neighborsWithHistory")
+    }
+  }
+
+  test("newNeighborsOnly") {
+    new Level1 {
+      val computedNeighbors =
+        newNeighborsOnly(
+          Set(
+            (Block(Pos(1,2),Pos(1,3)), List(Right,Left,Up)),
+            (Block(Pos(2,1),Pos(3,1)), List(Down,Left,Up))
+          ).toStream,
+
+          Set(Block(Pos(1,2),Pos(1,3)), Block(Pos(1,1),Pos(1,1)))
+        ).toSet
+
+      val expectedNeighbors = Set(
+        (Block(Pos(2,1),Pos(3,1)), List(Down,Left,Up))
+      )
+
+      assert(computedNeighbors === expectedNeighbors, "newNeighborsOnly")
+    }
+  }
+
   test("optimal solution for level 1") {
     new Level1 {
-      assert(solve(solution) == Block(goal, goal))
+      assert(solve(solution) === Block(goal, goal))
     }
   }
 
   test("optimal solution length for level 1") {
     new Level1 {
-      assert(solution.length == optsolution.length)
+      assert(solution.length === optsolution.length)
     }
   }
 }
